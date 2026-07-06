@@ -3,7 +3,7 @@
 Welcome! This test is designed to reflect real day-to-day work for this role: provisioning
 serverless infrastructure with Terraform and designing a CI/CD pipeline around it.
 
-**Time budget:** 2–4 hours. There is no need to over-engineer — we care more about clear
+**Time budget:** 3–5 hours. There is no need to over-engineer — we care more about clear
 reasoning and correct fundamentals than a "perfect" solution.
 
 **You do NOT need to run `terraform apply` against a real AWS account.** We only need to
@@ -22,7 +22,7 @@ using Terraform and design a CI/CD pipeline to deploy it automatically.
 
 ---
 
-## Part 1 — Terraform (60–90 min)
+## Part 1 — Terraform (90–150 min)
 
 Write Terraform to provision:
 
@@ -35,11 +35,23 @@ Write Terraform to provision:
    `AdministratorAccess` or overly broad `*` policies).
 5. **Remote state** setup — S3 backend + DynamoDB lock table configuration (code only,
    no need to actually apply it).
+6. **VPC + Aurora PostgreSQL Serverless v2**:
+   - VPC with at least two private subnets (across separate AZs) for the Aurora cluster,
+     plus whatever public/NAT setup you judge necessary for Lambda's outbound access.
+   - Aurora Serverless v2 cluster (PostgreSQL-compatible) placed in the private subnets,
+     with a DB subnet group and reasonable min/max ACU scaling config.
+   - Security groups: Lambda's SG may reach the Aurora SG on port 5432 only — no
+     `0.0.0.0/0` ingress on the DB.
+   - Attach the Lambda function to the VPC so it can reach the cluster. Actual DB
+     connection logic in the Lambda body is **not required** — a trivial handler is fine,
+     same as item 1.
+   - Credentials: use Secrets Manager or the RDS Data API — do not hardcode DB
+     credentials in Terraform or in the Lambda environment variables in plaintext.
 
 **Requirements:**
 - Use a **module structure** — do not put everything into a single `main.tf`.
 - Separate `variables.tf` and `outputs.tf`.
-- Output the API Gateway endpoint URL.
+- Output the API Gateway endpoint URL and the Aurora cluster endpoint.
 
 ---
 
@@ -66,9 +78,10 @@ Write a short `DESIGN.md` answering:
 1. Why did you organize the Terraform modules the way you did?
 2. If this needed to scale to **multi-environment (dev/staging/prod) across 3 separate
    AWS accounts**, what would you change in this setup?
-3. If this Lambda function needed to connect to an **Aurora PostgreSQL Serverless v2**
-   instance inside a VPC, how would you design the networking (VPC, subnets, security
-   groups)?
+3. You already provisioned the VPC + Aurora Serverless v2 setup in Part 1 — walk through
+   your networking design decisions (subnet layout, NAT vs VPC endpoints, security group
+   rules) and the trade-offs you considered (cost vs. availability, public vs. private
+   access, RDS Data API vs. direct DB connections from Lambda).
 4. What do you think is the biggest risk in the pipeline you designed, and how would you
    mitigate it?
 
@@ -80,8 +93,8 @@ Write a short `DESIGN.md` answering:
 2. Create a branch: `git checkout -b submission/<your-name>`
 3. Complete the assignment (Terraform + CI/CD + DESIGN.md).
 4. Commit in logical, meaningful chunks — no need to squash into a single commit.
-   (e.g. "Add Lambda + API Gateway module", "Add remote state config",
-   "Add GitHub Actions pipeline", "Add design doc")
+   (e.g. "Add Lambda + API Gateway module", "Add VPC + Aurora Serverless v2 module",
+   "Add remote state config", "Add GitHub Actions pipeline", "Add design doc")
 5. Push your branch and open a Pull Request against `main`.
 6. Fill in the PR description using the template below.
 7. **Deadline:** 3 days from when you received this test.
