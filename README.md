@@ -95,7 +95,7 @@ Write a short `DESIGN.md` answering:
 4. Commit in logical, meaningful chunks — no need to squash into a single commit.
    (e.g. "Add Lambda + API Gateway module", "Add VPC + Aurora Serverless v2 module",
    "Add remote state config", "Add GitHub Actions pipeline", "Add design doc")
-5. Push your branch and open a Pull Request against `main`.
+5. Push your branch and open a Pull Request against `master`.
 6. Fill in the PR description using the template below.
 7. **Deadline:** 3 days from when you received this test.
 
